@@ -1,23 +1,44 @@
 'use client';
+
+import { useGetNowPlayingMovies } from '@/hooks/api/movies';
 import { Button } from '@nextui-org/react';
-import { useRouter } from 'next/navigation';
-import { MdOutlineStarBorder } from 'react-icons/md';
+import { useMemo } from 'react';
+import { Spinner } from '@nextui-org/react';
 
 const Home = () => {
-  const router = useRouter();
+  const {
+    data: nowPlayingMovies,
+    hasNextPage,
+    isFetching,
+    fetchNextPage,
+  } = useGetNowPlayingMovies();
+
+  const movies = useMemo(
+    () => nowPlayingMovies?.pages.flatMap(({ results }) => results) ?? [],
+    [nowPlayingMovies?.pages]
+  );
 
   return (
-    <div className='flex min-h-screen flex-col items-center justify-between p-24'>
-      <div className='flex items-center justify-center relative w-full'>
-        <h1 className='text-6xl'>Filmy</h1>
-        <Button
-          className='absolute right-2'
-          disableAnimation
-          startContent={<MdOutlineStarBorder className='text-yellow-400' />}
-          onClick={() => router.push('/favorites')}>
-          Obľúbené
-        </Button>
-      </div>
+    <div className='flex min-h-screen flex-col items-center justify-center'>
+      {isFetching && (
+        <Spinner label='Načítavanie...' color='warning' labelColor='warning' />
+      )}
+
+      {!isFetching && !!movies.length && (
+        <div className='my-7'>
+          {movies.map((movie) => (
+            <div key={movie.id} className='text-white'>
+              {movie.title}
+            </div>
+          ))}
+
+          {hasNextPage && (
+            <Button className='mt-5' onClick={() => fetchNextPage()}>
+              Načítať ďalšie
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
