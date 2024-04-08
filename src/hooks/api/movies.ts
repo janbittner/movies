@@ -1,14 +1,25 @@
 import { api } from '@/api/api';
 import endpoints from '@/api/endpoints';
+import { Movie } from '@/types/movie';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import qs from 'qs';
+
+type PaginatedMoviesResponse = {
+  dates: { maximum: string; minimum: string };
+  page: number;
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+};
 
 const getNowPlayingMovies = async (page: number) => {
   const query = qs.stringify({
     page,
-    language: 'sk',
   });
-  const response = await api.get(`${endpoints.MOVIE.NOW_PLAYING}?${query}`);
+  const response = await api.get<PaginatedMoviesResponse>(
+    `${endpoints.MOVIE.NOW_PLAYING}?${query}`
+  );
+
   return response.data;
 };
 

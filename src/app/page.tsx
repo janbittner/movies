@@ -1,9 +1,12 @@
 'use client';
 
 import { useGetNowPlayingMovies } from '@/hooks/api/movies';
-import { Button } from '@nextui-org/react';
+import { Button, Input } from '@nextui-org/react';
 import { useMemo } from 'react';
 import { Spinner } from '@nextui-org/react';
+import MovieCard from '@/components/MovieCard';
+import { Movie } from '@/types/movie';
+import { MdOutlineSearch } from 'react-icons/md';
 
 const Home = () => {
   const {
@@ -19,26 +22,61 @@ const Home = () => {
   );
 
   return (
-    <div className='flex min-h-screen flex-col items-center justify-center'>
-      {isFetching && (
-        <Spinner label='Načítavanie...' color='warning' labelColor='warning' />
-      )}
+    <div className='flex flex-col items-center justify-center'>
+      <Input
+        isClearable
+        radius='full'
+        classNames={{
+          base: ['max-w-md', 'px-8'],
+          input: [
+            'bg-transparent',
+            'text-black/90 dark:text-white/90',
+            'placeholder:text-default-700/50 dark:placeholder:text-white/60',
+          ],
+          innerWrapper: 'bg-transparent',
+          inputWrapper: [
+            'shadow-xl',
+            'bg-default-200/50',
+            'dark:bg-default/60',
+            'backdrop-blur-xl',
+            'backdrop-saturate-200',
+            'hover:bg-default-200/70',
+            'dark:hover:bg-default/70',
+            'group-data-[focused=true]:bg-default-200/50',
+            'dark:group-data-[focused=true]:bg-default/60',
+            '!cursor-text',
+          ],
+        }}
+        placeholder='Type to search...'
+        startContent={
+          <MdOutlineSearch className='text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0' />
+        }
+      />
 
-      {!isFetching && !!movies.length && (
-        <div className='my-7'>
-          {movies.map((movie) => (
-            <div key={movie.id} className='text-white'>
-              {movie.title}
-            </div>
-          ))}
+      <div className='flex flex-col justify-center items-center min-h-96'>
+        {isFetching && !movies.length && (
+          <Spinner label='Loading...' color='warning' labelColor='warning' />
+        )}
 
-          {hasNextPage && (
-            <Button className='mt-5' onClick={() => fetchNextPage()}>
-              Načítať ďalšie
-            </Button>
-          )}
-        </div>
-      )}
+        {!!movies.length && (
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 py-10 px-8 sm:px-10 md:px-12 lg:px-16 xl:px-20'>
+            {movies.map((movie: Movie) => (
+              <div key={movie.id}>
+                <MovieCard movie={movie} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {hasNextPage && (
+          <Button
+            className='mb-5'
+            onClick={() => fetchNextPage()}
+            radius='full'>
+            Load more
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

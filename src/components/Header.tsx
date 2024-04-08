@@ -1,6 +1,5 @@
 'use client';
 
-import { MdOutlineStarBorder } from 'react-icons/md';
 import { Button } from '@nextui-org/react';
 import { useRouter } from 'next/navigation';
 
@@ -10,13 +9,13 @@ const Header = () => {
   return (
     <div className='flex items-center justify-between w-full p-5'>
       <h1 onClick={() => router.push('/')} className='text-6xl cursor-pointer'>
-        Filmy
+        Movies
       </h1>
       <Button
-        disableAnimation
-        startContent={<MdOutlineStarBorder className='text-yellow-400' />}
+        radius='full'
+        className='bg-gradient-to-tr from-red-500 to-yellow-500 text-white shadow-lg'
         onClick={() => router.push('/favorites')}>
-        Obľúbené
+        Favorites
       </Button>
     </div>
   );
