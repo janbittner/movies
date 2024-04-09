@@ -18,7 +18,11 @@ const MovieCard = ({ movie }: Props) => {
       <img
         className='object-cover h-full w-full'
         alt='todo'
-        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+        src={
+          movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : 'missing-poster.png'
+        }
       />
       <CardFooter className='hidden backdrop-blur-3xl group-hover:flex flex-col justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-xl ml-1 z-10'>
         <p className='text-tiny text-white/80 line-clamp-6'>{movie.overview}</p>
@@ -32,7 +36,7 @@ const MovieCard = ({ movie }: Props) => {
             {(Math.round(movie.vote_average * 10) / 10).toString()}
           </Chip>
           <Button
-            className='text-tiny bg-gradient-to-tr from-red-500 to-yellow-500 text-white shadow-xl'
+            className='text-tiny bg-gradient-to-tr from-yellow-500 to-red-500 text-white shadow-xl'
             variant='shadow'
             radius='full'
             size='sm'>

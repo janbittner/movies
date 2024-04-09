@@ -37,3 +37,32 @@ export const useGetNowPlayingMovies = () => {
     },
   });
 };
+
+const searchMovies = async (page: number, searchQuery: string) => {
+  const query = qs.stringify({
+    page,
+    include_adult: false,
+    query: searchQuery,
+  });
+  const response = await api.get<PaginatedMoviesResponse>(
+    `${endpoints.MOVIE.SEARCH}?${query}`
+  );
+
+  return response.data;
+};
+
+export const useSearchMovies = (searchQuery: string) => {
+  const initialPage = 1;
+
+  return useInfiniteQuery({
+    queryKey: ['search-movies', searchQuery],
+    queryFn: ({ pageParam }) => searchMovies(pageParam, searchQuery),
+    initialPageParam: initialPage,
+    getNextPageParam: (lastPage) => {
+      return lastPage.page < lastPage.total_pages
+        ? lastPage.page + 1
+        : undefined;
+    },
+    enabled: !!searchQuery,
+  });
+};

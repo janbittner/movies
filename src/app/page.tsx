@@ -1,29 +1,53 @@
 'use client';
 
-import { useGetNowPlayingMovies } from '@/hooks/api/movies';
+import { useGetNowPlayingMovies, useSearchMovies } from '@/hooks/api/movies';
 import { Button, Input } from '@nextui-org/react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Spinner } from '@nextui-org/react';
 import MovieCard from '@/components/MovieCard';
 import { Movie } from '@/types/movie';
 import { MdOutlineSearch } from 'react-icons/md';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const Home = () => {
+  const [searchValue, setSearchValue] = useState<string>('');
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>('');
+
+  const debounceSearchValue = useDebounce(setDebouncedSearchValue, 300);
+
   const {
     data: nowPlayingMovies,
-    hasNextPage,
-    isFetching,
-    fetchNextPage,
+    hasNextPage: nowPlayingHasNextPage,
+    isFetching: nowPlayingIsFetching,
+    fetchNextPage: fetchNextNowPlayingPage,
   } = useGetNowPlayingMovies();
+  const {
+    data: searchedMovies,
+    hasNextPage: searchHasNextPage,
+    isFetching: searchIsFetching,
+    fetchNextPage: fetchSearchNextPage,
+  } = useSearchMovies(debouncedSearchValue);
 
-  const movies = useMemo(
-    () => nowPlayingMovies?.pages.flatMap(({ results }) => results) ?? [],
-    [nowPlayingMovies?.pages]
-  );
+  const isSearchEmpty = !searchValue;
+  const hasNextPage = nowPlayingHasNextPage || searchHasNextPage;
+  const isFetching = nowPlayingIsFetching || searchIsFetching;
+
+  const movies = useMemo(() => {
+    const moviesSource = isSearchEmpty ? nowPlayingMovies : searchedMovies;
+
+    return moviesSource?.pages.flatMap(({ results }) => results) ?? [];
+  }, [isSearchEmpty, nowPlayingMovies, searchedMovies]);
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchValue(value);
+    debounceSearchValue(value);
+  };
 
   return (
     <div className='flex flex-col items-center justify-center'>
       <Input
+        value={searchValue}
+        onValueChange={handleSearchInputChange}
         isClearable
         radius='full'
         classNames={{
@@ -71,7 +95,9 @@ const Home = () => {
         {hasNextPage && (
           <Button
             className='mb-5'
-            onClick={() => fetchNextPage()}
+            onClick={() =>
+              isSearchEmpty ? fetchNextNowPlayingPage() : fetchSearchNextPage()
+            }
             radius='full'>
             Load more
           </Button>
