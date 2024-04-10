@@ -1,8 +1,13 @@
 import { api } from '@/api/api';
 import endpoints from '@/api/endpoints';
 import { Movie } from '@/types/movie';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  UseQueryResult,
+  useInfiniteQuery,
+  useQueries,
+} from '@tanstack/react-query';
 import qs from 'qs';
+import { useCallback } from 'react';
 
 type PaginatedMoviesResponse = {
   dates: { maximum: string; minimum: string };
@@ -10,6 +15,32 @@ type PaginatedMoviesResponse = {
   results: Movie[];
   total_pages: number;
   total_results: number;
+};
+
+const getMovieById = async (id: number) => {
+  const response = await api.get<Movie>(`${endpoints.MOVIE.GET}/${id}`);
+
+  return response.data;
+};
+
+export const useGetMoviesByIds = (ids: number[]) => {
+  const combineUseCallback = useCallback(
+    (results: UseQueryResult<Movie, Error>[]) => {
+      return {
+        data: results.map((result) => result.data),
+        pending: results.some((result) => result.isPending),
+      };
+    },
+    []
+  );
+
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ['movie', id],
+      queryFn: () => getMovieById(id),
+    })),
+    combine: combineUseCallback,
+  });
 };
 
 const getNowPlayingMovies = async (page: number) => {

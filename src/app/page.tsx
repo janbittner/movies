@@ -29,8 +29,8 @@ const Home = () => {
   } = useSearchMovies(debouncedSearchValue);
 
   const isSearchEmpty = !searchValue;
-  const hasNextPage = nowPlayingHasNextPage || searchHasNextPage;
-  const isFetching = nowPlayingIsFetching || searchIsFetching;
+  const hasNextPage = isSearchEmpty ? nowPlayingHasNextPage : searchHasNextPage;
+  const isFetching = isSearchEmpty ? nowPlayingIsFetching : searchIsFetching;
 
   const movies = useMemo(() => {
     const moviesSource = isSearchEmpty ? nowPlayingMovies : searchedMovies;
@@ -82,17 +82,26 @@ const Home = () => {
           <Spinner label='Loading...' color='warning' labelColor='warning' />
         )}
 
+        {!isSearchEmpty &&
+          !isFetching &&
+          !movies.length &&
+          debouncedSearchValue && (
+            <div className='flex flex-col justify-center items-center min-h-96 text-white/80'>
+              No movies found. Try to change your search query.
+            </div>
+          )}
+
         {!!movies.length && (
-          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 py-10 px-8 sm:px-10 md:px-12 lg:px-16 xl:px-20'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 py-10 px-10 md:px-12 lg:px-16 xl:px-20'>
             {movies.map((movie: Movie) => (
               <div key={movie.id}>
-                <MovieCard movie={movie} />
+                <MovieCard movie={movie} actionButtonType='add' />
               </div>
             ))}
           </div>
         )}
 
-        {hasNextPage && (
+        {hasNextPage && !isFetching && !!movies.length && (
           <Button
             className='mb-5'
             onClick={() =>
